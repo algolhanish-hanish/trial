@@ -1,0 +1,12 @@
+{
+  "background_color": "#101020",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "HaniReya Calculator",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "Calculator",
+  "start_url": "/",
+  "theme_color": "#101020",
+  "description": "A futuristic calculator with a modern interface"
+}
