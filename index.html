@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HaniReya Calculator</title>
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#101020">
+<meta name="background-color" content="#101020">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="HaniReya Calculator">
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
+
+:root {
+    --cyan: #64f5ff;
+    --violet: #9b78ff;
+    --bg: #070a14;
+    --panel: rgba(17,23,42,.88);
+    --muted: #8491aa;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    background:
+        radial-gradient(ellipse at 20% 15%, #18254b, transparent 40%),
+        radial-gradient(ellipse at 85% 85%, #26143d, transparent 40%),
+        var(--bg);
+    color: #eef4ff;
+    font-family: Inter, sans-serif;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+        linear-gradient(#64f5ff09 1px, transparent 1px),
+        linear-gradient(90deg, #64f5ff09 1px, transparent 1px);
+    background-size: 40px 40px;
+}
+
+.wrap {
+    width: min(94vw, 410px);
+    animation: rise .7s ease;
+}
+
+@keyframes rise {
+    from { opacity: 0; transform: translateY(25px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.calc {
+    border: 1px solid #64f5ff30;
+    border-radius: 28px;
+    background: var(--panel);
+    backdrop-filter: blur(22px);
+    box-shadow: 0 25px 80px #0008, 0 0 35px #64f5ff12;
+    padding: 22px;
+}
+
+.top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 22px;
+}
+
+.brand {
+    font-family: Orbitron, sans-serif;
+    letter-spacing: 2px;
+    font-size: 15px;
+    color: var(--cyan);
+    text-shadow: 0 0 14px #64f5ff88;
+}
+
+.status {
+    font-size: 9px;
+    letter-spacing: 1px;
+    color: #7dffb5;
+}
+
+.display {
+    min-height: 140px;
+    padding: 18px 15px;
+    margin-bottom: 18px;
+    border-radius: 18px;
+    background: linear-gradient(145deg,#080d1b,#111a30);
+    border: 1px solid #ffffff12;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: flex-end;
+    overflow: hidden;
+}
+
+#previous {
+    height: 25px;
+    color: var(--muted);
+    font-size: 14px;
+}
+
+#screen {
+    font-family: Orbitron, sans-serif;
+    font-size: clamp(28px,8vw,38px);
+    color: #f3f7ff;
+    max-width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+    text-shadow: 0 0 18px #64f5ff44;
+}
+
+.keys {
+    display: grid;
+    grid-template-columns: repeat(4,1fr);
+    gap: 11px;
+}
+
+button {
+    border: 1px solid #ffffff12;
+    border-radius: 15px;
+    height: 64px;
+    background: linear-gradient(145deg,#1b243b,#12192b);
+    color: #e8efff;
+    font-size: 20px;
+    cursor: pointer;
+    transition: .2s ease;
+    box-shadow: 0 5px 12px #0005;
+}
+
+button:hover {
+    transform: translateY(-3px);
+    border-color: #64f5ff88;
+    box-shadow: 0 7px 20px #64f5ff22;
+}
+
+button:active { transform: scale(.94); }
+
+.utility {
+    color: var(--cyan);
+    background: #182a40;
+}
+
+.operator {
+    color: #c3a8ff;
+    background: #30254a;
+}
+
+.equals {
+    background: linear-gradient(135deg,#5de8f4,#8e8bff);
+    color: #06101c;
+    font-weight: bold;
+}
+
+.zero { grid-column: span 2; }
+
+.bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 17px;
+    color: #8491aa;
+    font-size: 10px;
+    letter-spacing: 1px;
+}
+
+#historyToggle {
+    background: none;
+    color: var(--cyan);
+    border: none;
+    box-shadow: none;
+    height: auto;
+    font-size: 11px;
+}
+
+.history {
+    display: none;
+    margin-top: 14px;
+    border-top: 1px solid #ffffff22;
+    padding-top: 12px;
+    max-height: 160px;
+    overflow: auto;
+}
+
+.history.show { display: block; }
+
+.history h3 {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 2px;
+}
+
+.history-entry {
+    padding: 8px 4px;
+    border-bottom: 1px solid #ffffff12;
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.history-entry:hover { color: var(--cyan); }
+
+@media(max-height:700px) {
+    .calc { padding: 16px; }
+    .display { min-height: 110px; }
+    button { height: 55px; }
+}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+<div class="calc">
+
+    <div class="top">
+        <div class="brand">
+            HaniReya <span style="color:#8491aa">/ CALC</span>
+        </div>
+        <div class="status">● SYSTEM ONLINE</div>
+    </div>
+
+    <div class="display">
+        <div id="previous"></div>
+        <div id="screen">0</div>
+    </div>
+
+    <div class="keys">
+        <button class="utility" data-action="clear">AC</button>
+        <button class="utility" data-action="back">⌫</button>
+        <button class="utility" data-action="percent">%</button>
+        <button class="operator" data-value="/">÷</button>
+
+        <button data-value="7">7</button>
+        <button data-value="8">8</button>
+        <button data-value="9">9</button>
+        <button class="operator" data-value="*">×</button>
+
+        <button data-value="4">4</button>
+        <button data-value="5">5</button>
+        <button data-value="6">6</button>
+        <button class="operator" data-value="-">−</button>
+
+        <button data-value="1">1</button>
+        <button data-value="2">2</button>
+        <button data-value="3">3</button>
+        <button class="operator" data-value="+">+</button>
+
+        <button class="zero" data-value="0">0</button>
+        <button data-value=".">.</button>
+        <button class="equals" data-action="equals">=</button>
+    </div>
+
+    <div class="bottom">
+        <span>HANIREYA • V1.0</span>
+        <button id="historyToggle">HISTORY ↗</button>
+    </div>
+
+    <div class="history" id="history">
+        <h3>RECENT CALCULATIONS</h3>
+        <div id="historyList"></div>
+    </div>
+
+</div>
+</div>
+
+<script>
+const screen = document.getElementById('screen');
+const previous = document.getElementById('previous');
+
+let current = '0';
+let expression = '';
+let justCalculated = false;
+let historyItems = [];
+
+function render() {
+    screen.textContent = current;
+    screen.scrollLeft = screen.scrollWidth;
+}
+
+function add(v) {
+    if (justCalculated && !'+-*/'.includes(v)) {
+        current = '0';
+        expression = '';
+        justCalculated = false;
+    }
+
+    if ('+-*/'.includes(v)) {
+        expression += current + v;
+        previous.textContent = expression;
+        current = '0';
+        justCalculated = false;
+        render();
+        return;
+    }
+
+    if (v === '.') {
+        if (!current.includes('.')) current += '.';
+    } else {
+        current = current === '0' ? v : current + v;
+    }
+
+    render();
+}
+
+function calculate() {
+    let exp = expression + current;
+
+    try {
+        if (!/^[0-9+\-*/.() ]+$/.test(exp)) throw Error();
+
+        let result = Function('"use strict"; return (' + exp + ')')();
+
+        if (!Number.isFinite(result)) throw Error();
+
+        result = Number(result.toPrecision(12));
+
+        historyItems.unshift({exp, result});
+        historyItems = historyItems.slice(0, 12);
+
+        renderHistory();
+
+        previous.textContent = exp + ' =';
+        current = String(result);
+        expression = '';
+        justCalculated = true;
+
+        render();
+    } catch {
+        previous.textContent = 'Invalid operation';
+        current = 'Error';
+        expression = '';
+        justCalculated = true;
+        render();
+    }
+}
+
+function clear() {
+    current = '0';
+    expression = '';
+    previous.textContent = '';
+    justCalculated = false;
+    render();
+}
+
+function back() {
+    if (justCalculated) {
+        clear();
+        return;
+    }
+
+    current = current.length > 1 ? current.slice(0, -1) : '0';
+    render();
+}
+
+function percent() {
+    let n = Number(current);
+
+    if (Number.isFinite(n)) {
+        current = String(n / 100);
+        render();
+    }
+}
+
+function renderHistory() {
+    document.getElementById('historyList').innerHTML =
+        historyItems.map((x, i) =>
+        `<div class="history-entry" data-index="${i}">
+            <span>${x.exp}</span>
+            <span>${x.result}</span>
+        </div>`
+    ).join('');
+}
+
+document.querySelector('.keys').addEventListener('click', e => {
+    const b = e.target.closest('button');
+    if (!b) return;
+
+    if (b.dataset.value !== undefined) add(b.dataset.value);
+    else if (b.dataset.action === 'clear') clear();
+    else if (b.dataset.action === 'back') back();
+    else if (b.dataset.action === 'percent') percent();
+    else if (b.dataset.action === 'equals') calculate();
+});
+
+document.getElementById('historyToggle').addEventListener('click', () => {
+    document.getElementById('history').classList.toggle('show');
+});
+
+document.getElementById('historyList').addEventListener('click', e => {
+    const row = e.target.closest('.history-entry');
+    if (!row) return;
+
+    current = String(historyItems[row.dataset.index].result);
+    expression = '';
+    previous.textContent = '';
+    justCalculated = true;
+    render();
+});
+
+document.addEventListener('keydown', e => {
+    if (/^[0-9.]$/.test(e.key)) add(e.key);
+    else if ('+-*/'.includes(e.key)) add(e.key);
+    else if (e.key === 'Enter' || e.key === '=') {
+        e.preventDefault();
+        calculate();
+    }
+    else if (e.key === 'Backspace') back();
+    else if (e.key === 'Escape') clear();
+    else if (e.key === '%') percent();
+});
+
+render();
+</script>
+</body>
+</html>
